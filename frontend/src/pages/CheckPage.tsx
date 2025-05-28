@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, Check, X, ArrowLeft, RefreshCw, Shield, AlertTriangle, Info, ChevronDown, ChevronUp, Share2, AlertOctagon } from 'lucide-react';
 import { JobAnalysisResult } from '../types/jobAnalysis';
 import { formatDistanceToNow } from 'date-fns';
+import JobAnalysisDetails from '../components/JobAnalysisDetails';
+import '../styles/scrollbar.css';
 
 interface JobFormData {
   jobTitle: string;
@@ -14,6 +16,17 @@ interface FallbackData {
   message: string;
   icon: React.ReactNode;
 }
+
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return 'Unknown date';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
 
 const CheckPage: React.FC = () => {
   const [formData, setFormData] = useState<JobFormData>({
@@ -52,6 +65,26 @@ const CheckPage: React.FC = () => {
     }));
   };
   
+  const saveToHistory = (result: JobAnalysisResult) => {
+    const historyItem = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      formData,
+      result
+    };
+
+    const existingHistory = localStorage.getItem('jobAnalysisHistory');
+    const history = existingHistory ? JSON.parse(existingHistory) : [];
+    
+    // Add new item to the beginning of the array
+    history.unshift(historyItem);
+    
+    // Keep only the last 50 items
+    const trimmedHistory = history.slice(0, 50);
+    
+    localStorage.setItem('jobAnalysisHistory', JSON.stringify(trimmedHistory));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsVerifying(true);
@@ -73,6 +106,7 @@ const CheckPage: React.FC = () => {
 
       const data = await response.json();
       setResult(data);
+      saveToHistory(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -320,17 +354,6 @@ const CheckPage: React.FC = () => {
                     <h3 className="text-xl sm:text-2xl font-semibold text-white mb-4">
                       {formData.jobTitle} at {formData.companyName}
                     </h3>
-                    <div className="flex items-center space-x-4">
-                      {getScoreIcon(result.legitimacyStatus)}
-                      <div>
-                        <div className={`text-lg sm:text-xl font-semibold ${getScoreColor(result.trustScore * 100)}`}>
-                          {result.trustScore * 100}%
-                        </div>
-                        <div className="text-white/60 text-sm">
-                          Trust Score
-                        </div>
-                      </div>
-                    </div>
                   </div>
                   <button
                     onClick={handleShare}
@@ -342,389 +365,11 @@ const CheckPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-8 border-b border-white/10">
-                <h4 className="font-medium text-white mb-3">Overall Analysis</h4>
-                <p className="text-white/80">{result.reasoning}</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-8">
-                <div className="glass p-4 sm:p-6 rounded-xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium text-white">Reposting History</h4>
-                    <button
-                      onClick={() => toggleSection('repostingHistory')}
-                      className="text-white/60 hover:text-white"
-                    >
-                      {expandedSections.repostingHistory ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {expandedSections.repostingHistory && (
-                    <>
-                      {result.repostingHistory.sources.length === 0 ? (
-                        <FallbackMessage type="repostingHistory" />
-                      ) : (
-                        <>
-                          <p className="text-white/70">{result.repostingHistory.summary}</p>
-                          <p className="text-white/60 text-sm mt-2">{result.repostingHistory.explanation}</p>
-                          <div className="mt-4 space-y-2">
-                            {result.repostingHistory.sources.map((source, index) => (
-                              <a
-                                key={index}
-                                href={source.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block text-blue-400 hover:text-blue-300 text-sm truncate"
-                              >
-                                {source.platform} - {source.title} ({formatDistanceToNow(new Date(source.date))} ago)
-                              </a>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div className="glass p-4 sm:p-6 rounded-xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium text-white">Community Sentiment</h4>
-                    <button
-                      onClick={() => toggleSection('communitySentiment')}
-                      className="text-white/60 hover:text-white"
-                    >
-                      {expandedSections.communitySentiment ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {expandedSections.communitySentiment && (
-                    <>
-                      {result.communitySentiment.redditAnalysis.length === 0 && 
-                       result.communitySentiment.blindAnalysis.length === 0 && 
-                       result.communitySentiment.glassdoorAnalysis.length === 0 ? (
-                        <FallbackMessage type="communitySentiment" />
-                      ) : (
-                        <>
-                          <p className="text-white/70">{result.communitySentiment.summary}</p>
-                          
-                          <div className="mt-4">
-                            <h5 className="font-medium text-white/90 mb-2">Reddit Feedback</h5>
-                            {result.communitySentiment.redditAnalysis.length === 0 ? (
-                              <p className="text-white/60 text-sm">No Reddit discussions found</p>
-                            ) : (
-                              <div className="space-y-3">
-                                {result.communitySentiment.redditAnalysis.map((analysis, index) => (
-                                  <div key={index} className="bg-white/5 p-3 rounded-lg">
-                                    <p className="text-white/80 italic">"{analysis.quote}"</p>
-                                    <a
-                                      href={analysis.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 text-sm mt-1 block truncate"
-                                    >
-                                      View on Reddit • {formatDistanceToNow(new Date(analysis.date))} ago
-                                    </a>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4">
-                            <h5 className="font-medium text-white/90 mb-2">Blind Reviews</h5>
-                            {result.communitySentiment.blindAnalysis.length === 0 ? (
-                              <p className="text-white/60 text-sm">No Blind reviews found</p>
-                            ) : (
-                              <div className="space-y-3">
-                                {result.communitySentiment.blindAnalysis.map((analysis, index) => (
-                                  <div key={index} className="bg-white/5 p-3 rounded-lg">
-                                    <p className="text-white/80 italic">"{analysis.quote}"</p>
-                                    <a
-                                      href={analysis.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 text-sm mt-1 block truncate"
-                                    >
-                                      View on Blind • {formatDistanceToNow(new Date(analysis.date))} ago
-                                    </a>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4">
-                            <h5 className="font-medium text-white/90 mb-2">Glassdoor Reviews</h5>
-                            {result.communitySentiment.glassdoorAnalysis.length === 0 ? (
-                              <p className="text-white/60 text-sm">No Glassdoor reviews found</p>
-                            ) : (
-                              <div className="space-y-3">
-                                {result.communitySentiment.glassdoorAnalysis.map((analysis, index) => (
-                                  <div key={index} className="bg-white/5 p-3 rounded-lg">
-                                    <div className="flex items-center mb-1">
-                                      <span className="text-yellow-400">★</span>
-                                      <span className="text-white/80 ml-1">{analysis.rating.toFixed(1)}</span>
-                                    </div>
-                                    <p className="text-white/80 italic">"{analysis.review}"</p>
-                                    <a
-                                      href={analysis.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 text-sm mt-1 block truncate"
-                                    >
-                                      View on Glassdoor • {formatDistanceToNow(new Date(analysis.date))} ago
-                                    </a>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-4 sm:p-8 border-t border-white/10">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium text-white">Company Verification</h4>
-                  <button
-                    onClick={() => toggleSection('companyVerification')}
-                    className="text-white/60 hover:text-white"
-                  >
-                    {expandedSections.companyVerification ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                  </button>
-                </div>
-                {expandedSections.companyVerification && (
-                  <>
-                    {!result.companySignal.linkedInPresence.exists && 
-                     !result.companySignal.careerPageActive.exists && 
-                     result.companySignal.officialSources.length === 0 ? (
-                      <FallbackMessage type="companySignal" />
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70">LinkedIn Presence</span>
-                            <div className="flex items-center">
-                              <span className={result.companySignal.linkedInPresence.exists ? 'text-green-400' : 'text-red-400'}>
-                                {getIconForValue(result.companySignal.linkedInPresence.exists)}
-                              </span>
-                              {result.companySignal.linkedInPresence.exists && (
-                                <a
-                                  href={result.companySignal.linkedInPresence.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300 text-sm ml-2"
-                                >
-                                  View Profile
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70">Career Page Active</span>
-                            <div className="flex items-center">
-                              <span className={result.companySignal.careerPageActive.exists ? 'text-green-400' : 'text-red-400'}>
-                                {getIconForValue(result.companySignal.careerPageActive.exists)}
-                              </span>
-                              {result.companySignal.careerPageActive.exists && (
-                                <a
-                                  href={result.companySignal.careerPageActive.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300 text-sm ml-2"
-                                >
-                                  View Career Page
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4">
-                          <h5 className="font-medium text-white/90 mb-2">Official Sources</h5>
-                          {result.companySignal.officialSources.length === 0 ? (
-                            <p className="text-white/60 text-sm">No official sources found</p>
-                          ) : (
-                            <div className="space-y-2">
-                              {result.companySignal.officialSources.map((source, index) => (
-                                <a
-                                  key={index}
-                                  href={source.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block text-blue-400 hover:text-blue-300 text-sm truncate"
-                                >
-                                  {source.title} • {formatDistanceToNow(new Date(source.date))} ago
-                                </a>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <p className="text-white/60 text-sm mt-4">{result.companySignal.explanation}</p>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <div className="p-4 sm:p-8 border-t border-white/10">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium text-white">Job Details</h4>
-                  <button
-                    onClick={() => toggleSection('jobDetails')}
-                    className="text-white/60 hover:text-white"
-                  >
-                    {expandedSections.jobDetails ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                  </button>
-                </div>
-                {expandedSections.jobDetails && (
-                  <>
-                    {!result.jobDetails.realisticRequirements && 
-                     !result.jobDetails.salaryProvided && 
-                     result.jobDetails.crossPlatformComparison.length === 0 ? (
-                      <FallbackMessage type="jobDetails" />
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg group relative">
-                            <span className="text-white/70">Requirements Realistic</span>
-                            <div className="flex items-center">
-                              <span className={result.jobDetails.realisticRequirements ? 'text-green-400' : 'text-red-400'}>
-                                {getIconForValue(result.jobDetails.realisticRequirements)}
-                              </span>
-                              <Info className="h-4 w-4 ml-2 text-white/40 group-hover:text-white/60 cursor-help" />
-                            </div>
-                            <div className="absolute right-0 top-full mt-2 w-64 p-2 bg-black/90 rounded-lg text-sm text-white/80 hidden group-hover:block z-10">
-                              {result.jobDetails.requirements.analysis || 'No analysis available'}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg group relative">
-                            <span className="text-white/70">Salary Provided</span>
-                            <div className="flex items-center">
-                              <span className={result.jobDetails.salaryProvided ? 'text-green-400' : 'text-red-400'}>
-                                {getIconForValue(result.jobDetails.salaryProvided)}
-                              </span>
-                              <Info className="h-4 w-4 ml-2 text-white/40 group-hover:text-white/60 cursor-help" />
-                            </div>
-                            {result.jobDetails.salaryProvided && (
-                              <div className="absolute right-0 top-full mt-2 w-64 p-2 bg-black/90 rounded-lg text-sm text-white/80 hidden group-hover:block z-10">
-                                {result.jobDetails.salary.range} {result.jobDetails.salary.currency}
-                                <br />
-                                Source: {result.jobDetails.salary.source}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70">Posting Age</span>
-                            <span className="text-white font-medium">{result.jobDetails.postingAge || 'Unknown'}</span>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                            <span className="text-white/70">Reposted Times</span>
-                            <span className="text-white font-medium">{result.jobDetails.repostedTimes || 0}</span>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg group relative">
-                            <span className="text-white/70">Consistency Across Sites</span>
-                            <div className="flex items-center">
-                              <span className={result.jobDetails.consistencyAcrossSites ? 'text-green-400' : 'text-red-400'}>
-                                {getIconForValue(result.jobDetails.consistencyAcrossSites)}
-                              </span>
-                              <Info className="h-4 w-4 ml-2 text-white/40 group-hover:text-white/60 cursor-help" />
-                            </div>
-                            <div className="absolute right-0 top-full mt-2 w-64 p-2 bg-black/90 rounded-lg text-sm text-white/80 hidden group-hover:block z-10">
-                              Indicates if the job details are consistent across different job boards and platforms.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4">
-                          <h5 className="font-medium text-white/90 mb-2">Cross-Platform Comparison</h5>
-                          {result.jobDetails.crossPlatformComparison.length === 0 ? (
-                            <p className="text-white/60 text-sm">No cross-platform comparison available</p>
-                          ) : (
-                            <div className="space-y-4">
-                              {result.jobDetails.crossPlatformComparison.map((comparison, index) => (
-                                <div key={index} className="bg-white/5 p-4 rounded-lg">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <a
-                                      href={comparison.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 truncate"
-                                    >
-                                      {comparison.platform}
-                                    </a>
-                                    <span className="text-white/60 text-sm ml-2">
-                                      {formatDistanceToNow(new Date(comparison.date))} ago
-                                    </span>
-                                  </div>
-                                  <h6 className="text-white/80 font-medium mb-2 truncate">{comparison.title}</h6>
-                                  {comparison.salary && (
-                                    <p className="text-white/70 text-sm mb-2">Salary: {comparison.salary}</p>
-                                  )}
-                                  <div className="text-white/60 text-sm">
-                                    <p className="font-medium mb-1">Requirements:</p>
-                                    <ul className="list-disc list-inside space-y-1">
-                                      {comparison.requirements.map((req, i) => (
-                                        <li key={i} className="truncate">{req}</li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <p className="text-white/60 text-sm mt-4">{result.jobDetails.explanation}</p>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {result.citations && result.citations.length > 0 ? (
-                <div className="p-4 sm:p-8 border-t border-white/10">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium text-white">Sources</h4>
-                    <button
-                      onClick={() => toggleSection('sources')}
-                      className="text-white/60 hover:text-white"
-                    >
-                      {expandedSections.sources ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {expandedSections.sources && (
-                    <div className="space-y-3">
-                      {result.citations
-                        .sort((a, b) => (a.isOfficial === b.isOfficial ? 0 : a.isOfficial ? -1 : 1))
-                        .map((citation, index) => (
-                          <div key={index} className="flex items-start space-x-2">
-                            <span className={`text-sm ${citation.isOfficial ? 'text-green-400' : 'text-white/60'}`}>
-                              {citation.isOfficial ? '✓' : '•'}
-                            </span>
-                            <a
-                              href={citation.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 hover:text-blue-300 text-sm flex-1 truncate"
-                            >
-                              {citation.title}
-                            </a>
-                            <span className="text-white/40 text-sm">
-                              {formatDistanceToNow(new Date(citation.date))} ago
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="p-4 sm:p-8 border-t border-white/10">
-                  <FallbackMessage type="citations" />
-                </div>
-              )}
+              <JobAnalysisDetails
+                result={result}
+                expandedSections={expandedSections}
+                toggleSection={toggleSection}
+              />
             </div>
           )}
         </div>
