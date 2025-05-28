@@ -1,6 +1,6 @@
 # Is This Job Real
 
-A full-stack application to verify job listings.
+A full-stack application to verify job listings using real-time web data and AI reasoning.
 
 ## Project Structure
 
@@ -63,6 +63,17 @@ NODE_ENV=development
 
    - Frontend: [http://localhost:5173/](http://localhost:5173/)
    - Backend: [http://localhost:3000/](http://localhost:3000/)
+
+## Features
+
+- **Job Fact-Checking**: Verify job listings using Sonar Pro API by Perplexity.
+- **Trust Score**: Evaluate job legitimacy based on reposting history, company credibility, and community sentiment.
+- **Citations**: Every claim includes verifiable source links from the web.
+
+## API Endpoints
+
+- **GET /api/jobs/check**: Basic job check endpoint.
+- **POST /api/jobs/fact-check**: Fact-check a job listing using Sonar Pro API.
 
 ## .gitignore
 

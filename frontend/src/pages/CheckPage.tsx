@@ -66,73 +66,31 @@ const CheckPage: React.FC = () => {
     checkJob();
   };
   
-  const checkJob = () => {
+  const checkJob = async () => {
     setIsVerifying(true);
     setResult(null);
     setError(null);
-    
-    setTimeout(() => {
-      if (formData.jobTitle.toLowerCase().includes('software engineer') && formData.companyName.toLowerCase().includes('stripe')) {
-        setResult({
-          score: 86,
-          legitimacyStatus: 'legitimate',
-          details: {
-            companyVerification: {
-              linkedInPresence: true,
-              careerPage: true,
-              consistentDetails: true,
-            },
-            jobAnalysis: {
-              realisticRequirements: true,
-              salaryProvided: true,
-              multiplePostings: true,
-              postingAge: '2 weeks',
-              repostedTimes: 0,
-            },
-            communityFeedback: {
-              redditMentions: false,
-              glassdoorReviews: false,
-            },
-          },
-        });
-      } else {
-        const randomScore = Math.floor(Math.random() * 101);
-        let legitimacyStatus: 'legitimate' | 'suspicious' | 'likely-fake';
-        
-        if (randomScore >= 70) {
-          legitimacyStatus = 'legitimate';
-        } else if (randomScore >= 40) {
-          legitimacyStatus = 'suspicious';
-        } else {
-          legitimacyStatus = 'likely-fake';
-        }
-        
-        setResult({
-          score: randomScore,
-          legitimacyStatus,
-          details: {
-            companyVerification: {
-              linkedInPresence: Math.random() > 0.3,
-              careerPage: Math.random() > 0.4,
-              consistentDetails: Math.random() > 0.5,
-            },
-            jobAnalysis: {
-              realisticRequirements: Math.random() > 0.3,
-              salaryProvided: Math.random() > 0.6,
-              multiplePostings: Math.random() > 0.5,
-              postingAge: `${Math.floor(Math.random() * 8) + 1} weeks`,
-              repostedTimes: Math.floor(Math.random() * 5),
-            },
-            communityFeedback: {
-              redditMentions: Math.random() > 0.7,
-              glassdoorReviews: Math.random() > 0.6,
-            },
-          },
-        });
+
+    try {
+      const response = await fetch('http://localhost:3000/api/jobs/fact-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch job insights');
       }
-      
+
+      const data = await response.json();
+      setResult(data.data);
+    } catch (err) {
+      setError('Error fetching job insights. Please try again.');
+    } finally {
       setIsVerifying(false);
-    }, 2000);
+    }
   };
   
   const resetForm = () => {

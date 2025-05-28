@@ -8,8 +8,14 @@ import { jobRoutes } from './routes/jobRoutes.js';
 
 const app = express();
 
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Frontend URL
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 // Middleware
-app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
