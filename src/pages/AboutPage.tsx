@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Database, Users, Check, AlertTriangle, ExternalLink } from 'lucide-react';
+import { ArrowRight, Shield, Database, Users, Check, AlertTriangle, ExternalLink, Bell, Bookmark, Brain, Chrome } from 'lucide-react';
 
 const AboutPage: React.FC = () => {
   return (
@@ -144,17 +144,29 @@ const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Roadmap Section */}
-      <section className="py-16">
+   {/* Roadmap Section */}
+   <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="glass-card p-8">
               <h2 className="text-2xl font-bold mb-6 text-white">Coming Soon</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <RoadmapItem icon="🔖" title="Save job scans" />
-                <RoadmapItem icon="🧠" title="Pattern detection on companies" />
-                <RoadmapItem icon="📬" title="Weekly ghost job alerts" />
-                <RoadmapItem icon="🧩" title="Chrome extension" />
+                <RoadmapItem
+                  icon={<Bookmark className="h-6 w-6 text-blue-400" />}
+                  title="Save job scans"
+                />
+                <RoadmapItem
+                  icon={<Brain className="h-6 w-6 text-blue-400" />}
+                  title="Pattern detection on companies"
+                />
+                <RoadmapItem
+                  icon={<Bell className="h-6 w-6 text-blue-400" />}
+                  title="Weekly ghost job alerts"
+                />
+                <RoadmapItem
+                  icon={<Chrome className="h-6 w-6 text-blue-400" />}
+                  title="Chrome extension"
+                />
               </div>
             </div>
           </div>
@@ -202,7 +214,7 @@ const PersonaCard: React.FC<PersonaCardProps> = ({ icon, title, description }) =
 );
 
 interface RoadmapItemProps {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
 }
 
