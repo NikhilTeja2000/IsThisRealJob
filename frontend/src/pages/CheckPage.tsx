@@ -1,34 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Check, X, ArrowLeft, RefreshCw, Shield, AlertTriangle } from 'lucide-react';
+import { JobAnalysisResult } from '../types/jobAnalysis';
 
 interface JobFormData {
   jobTitle: string;
   companyName: string;
   jobLink?: string;
-}
-
-interface JobResult {
-  score: number;
-  legitimacyStatus: 'legitimate' | 'suspicious' | 'likely-fake';
-  details: {
-    companyVerification: {
-      linkedInPresence: boolean;
-      careerPage: boolean;
-      consistentDetails: boolean;
-    };
-    jobAnalysis: {
-      realisticRequirements: boolean;
-      salaryProvided: boolean;
-      multiplePostings: boolean;
-      postingAge: string;
-      repostedTimes: number;
-    };
-    communityFeedback: {
-      redditMentions: boolean;
-      glassdoorReviews: boolean;
-    };
-  };
 }
 
 const CheckPage: React.FC = () => {
@@ -38,7 +16,7 @@ const CheckPage: React.FC = () => {
     jobLink: '',
   });
   const [isVerifying, setIsVerifying] = useState(false);
-  const [result, setResult] = useState<JobResult | null>(null);
+  const [result, setResult] = useState<JobAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
@@ -61,12 +39,8 @@ const CheckPage: React.FC = () => {
     }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    checkJob();
-  };
-  
-  const checkJob = async () => {
     setIsVerifying(true);
     setResult(null);
     setError(null);
@@ -81,13 +55,13 @@ const CheckPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch job insights');
+        throw new Error('Failed to analyze job');
       }
 
       const data = await response.json();
-      setResult(data.data);
+      setResult(data);
     } catch (err) {
-      setError('Error fetching job insights. Please try again.');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsVerifying(false);
     }
@@ -208,12 +182,12 @@ const CheckPage: React.FC = () => {
                     {isVerifying ? (
                       <>
                         <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                        Verifying...
+                        Analyzing...
                       </>
                     ) : (
                       <>
                         <Shield className="mr-2 h-5 w-5" />
-                        Verify Job
+                        Check Job
                       </>
                     )}
                   </button>
@@ -260,8 +234,8 @@ const CheckPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     {getScoreIcon(result.legitimacyStatus)}
                     <div>
-                      <div className={`text-xl font-semibold ${getScoreColor(result.score)}`}>
-                        {result.score}/100
+                      <div className={`text-xl font-semibold ${getScoreColor(result.trustScore * 100)}`}>
+                        {result.trustScore * 100}%
                       </div>
                       <div className="text-white/60 text-sm">
                         Trust Score
@@ -272,70 +246,77 @@ const CheckPage: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="glass p-6 rounded-xl">
-                    <h4 className="font-medium text-white mb-4">Company Verification</h4>
-                    <ul className="space-y-3">
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">LinkedIn Presence</span>
-                        {getIconForValue(result.details.companyVerification.linkedInPresence)}
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Active Career Page</span>
-                        {getIconForValue(result.details.companyVerification.careerPage)}
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Consistent Job Details</span>
-                        {getIconForValue(result.details.companyVerification.consistentDetails)}
-                      </li>
-                    </ul>
+                    <h4 className="font-medium text-white mb-4">Reposting History</h4>
+                    <p className="text-white/70">{result.repostingHistory.summary}</p>
+                    <p className="text-white/60 text-sm">{result.repostingHistory.explanation}</p>
                   </div>
                   
                   <div className="glass p-6 rounded-xl">
-                    <h4 className="font-medium text-white mb-4">Job Analysis</h4>
-                    <ul className="space-y-3">
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Realistic Requirements</span>
-                        {getIconForValue(result.details.jobAnalysis.realisticRequirements)}
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Salary Information</span>
-                        {getIconForValue(result.details.jobAnalysis.salaryProvided)}
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Multiple Site Listings</span>
-                        {getIconForValue(result.details.jobAnalysis.multiplePostings)}
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Posting Age</span>
-                        <span className="text-white font-medium">{result.details.jobAnalysis.postingAge}</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="text-white/70">Times Reposted</span>
-                        <span className="text-white font-medium">{result.details.jobAnalysis.repostedTimes}</span>
-                      </li>
-                    </ul>
+                    <h4 className="font-medium text-white mb-4">Community Sentiment</h4>
+                    <p className="text-white/70">{result.communitySentiment.summary}</p>
+                    <div className="mt-4 space-y-2">
+                      <div>
+                        <h5 className="font-medium">Reddit Analysis</h5>
+                        <p className="text-white/60">{result.communitySentiment.redditAnalysis}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium">Blind Analysis</h5>
+                        <p className="text-white/60">{result.communitySentiment.blindAnalysis}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
                 <div className="mt-6 glass p-6 rounded-xl">
-                  <h4 className="font-medium text-white mb-4">Community Feedback</h4>
-                  <ul className="space-y-3">
-                    <li className="flex items-center justify-between">
-                      <span className="text-white/70">Reddit Mentions of Ghosting</span>
-                      {getIconForValue(result.details.communityFeedback.redditMentions)}
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span className="text-white/70">Negative Glassdoor Reviews</span>
-                      {getIconForValue(result.details.communityFeedback.glassdoorReviews)}
-                    </li>
-                  </ul>
+                  <h4 className="font-medium text-white mb-4">Company Signals</h4>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/70">LinkedIn Presence</span>
+                    <span className={result.companySignal.linkedInPresence ? 'text-green-400' : 'text-red-400'}>
+                      {getIconForValue(result.companySignal.linkedInPresence)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/70">Career Page Active</span>
+                    <span className={result.companySignal.careerPageActive ? 'text-green-400' : 'text-red-400'}>
+                      {getIconForValue(result.companySignal.careerPageActive)}
+                    </span>
+                  </div>
+                  <p className="text-white/60 text-sm">{result.companySignal.explanation}</p>
+                </div>
+                
+                <div className="mt-6 glass p-6 rounded-xl">
+                  <h4 className="font-medium text-white mb-4">Job Details</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Requirements Realistic</span>
+                      <span className={result.jobDetails.realisticRequirements ? 'text-green-400' : 'text-red-400'}>
+                        {getIconForValue(result.jobDetails.realisticRequirements)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Salary Provided</span>
+                      <span className={result.jobDetails.salaryProvided ? 'text-green-400' : 'text-red-400'}>
+                        {getIconForValue(result.jobDetails.salaryProvided)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Posting Age</span>
+                      <span className="text-white font-medium">{result.jobDetails.postingAge}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Reposted Times</span>
+                      <span className="text-white font-medium">{result.jobDetails.repostedTimes}</span>
+                    </div>
+                  </div>
+                  <p className="text-white/60 text-sm">{result.jobDetails.explanation}</p>
                 </div>
                 
                 <div className="mt-6 glass p-6 rounded-xl border border-blue-500/20">
                   <h4 className="font-medium text-white mb-3">Our Analysis</h4>
                   <p className="text-white/80">
-                    {result.score >= 70 ? (
+                    {result.trustScore >= 0.7 ? (
                       "This job appears to be legitimate based on our analysis. The company has a verified online presence and the job details are consistent with industry standards."
-                    ) : result.score >= 40 ? (
+                    ) : result.trustScore >= 0.4 ? (
                       "This job has some suspicious elements. While the company appears to be legitimate, there are inconsistencies in the job details or posting patterns that warrant caution."
                     ) : (
                       "This job shows multiple red flags typical of fake job listings. The posting has been repeatedly listed, lacks key details, or the company has been associated with ghosting candidates."

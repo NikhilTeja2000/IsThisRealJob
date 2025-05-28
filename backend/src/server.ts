@@ -26,7 +26,7 @@ app.use('/api/jobs', jobRoutes);
 // Error handling
 app.use(errorHandler);
 
-const PORT = config.port || 3000;
+const PORT = config.server.port || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
