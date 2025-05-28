@@ -68,9 +68,7 @@ const HistoryPage: React.FC = () => {
       <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
-            <Link to="/" className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors">
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Home
-            </Link>
+        
             <div className="flex justify-between items-center mt-4">
               <h1 className="text-3xl sm:text-4xl font-bold text-white">Analysis History</h1>
               {history.length > 0 && (
