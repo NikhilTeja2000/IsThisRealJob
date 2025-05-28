@@ -53,29 +53,115 @@ Required JSON format:
   "reasoning": "Overall summary of the job's legitimacy.",
   "repostingHistory": {
     "summary": string,
-    "explanation": string
+    "explanation": string,
+    "sources": [
+      {
+        "platform": string,
+        "url": string,
+        "date": string,
+        "title": string
+      }
+    ]
   },
   "communitySentiment": {
     "summary": string,
-    "redditAnalysis": string,
-    "blindAnalysis": string
+    "redditAnalysis": [
+      {
+        "sentiment": string,
+        "quote": string,
+        "url": string,
+        "date": string
+      }
+    ],
+    "blindAnalysis": [
+      {
+        "sentiment": string,
+        "quote": string,
+        "url": string,
+        "date": string
+      }
+    ],
+    "glassdoorAnalysis": [
+      {
+        "rating": number,
+        "review": string,
+        "url": string,
+        "date": string
+      }
+    ]
   },
   "companySignal": {
     "summary": string,
-    "linkedInPresence": boolean,
-    "careerPageActive": boolean,
+    "linkedInPresence": {
+      "exists": boolean,
+      "url": string,
+      "employeeCount": number,
+      "industry": string
+    },
+    "careerPageActive": {
+      "exists": boolean,
+      "url": string,
+      "lastUpdated": string
+    },
+    "officialSources": [
+      {
+        "type": "career" | "linkedin" | "indeed" | "glassdoor" | "other",
+        "url": string,
+        "title": string,
+        "date": string
+      }
+    ],
     "explanation": string
   },
-  "citations": [string],
   "jobDetails": {
     "realisticRequirements": boolean,
     "salaryProvided": boolean,
     "postingAge": string,
     "repostedTimes": number,
     "consistencyAcrossSites": boolean,
+    "requirements": {
+      "original": string[],
+      "analysis": string
+    },
+    "salary": {
+      "range": string,
+      "currency": string,
+      "source": string
+    },
+    "crossPlatformComparison": [
+      {
+        "platform": string,
+        "url": string,
+        "title": string,
+        "requirements": string[],
+        "salary": string,
+        "date": string
+      }
+    ],
     "explanation": string
-  }
+  },
+  "citations": [
+    {
+      "type": "career" | "linkedin" | "indeed" | "glassdoor" | "reddit" | "blind" | "other",
+      "url": string,
+      "title": string,
+      "date": string,
+      "isOfficial": boolean
+    }
+  ]
 }
+
+IMPORTANT INSTRUCTIONS:
+1. Always prioritize official sources (company career page, LinkedIn company page)
+2. Include at least 3 different sources for each metric
+3. For community sentiment, include actual quotes with dates
+4. For job details, compare requirements and salary across platforms
+5. Sort citations with official sources first
+6. Include specific dates for all sources
+7. Provide detailed explanations for each metric
+8. Include actual URLs for all sources
+9. For salary information, specify the source and date
+10. For requirements, list the original requirements and analyze their realism
 
 Focus on providing detailed explanations that help users understand why a job posting is considered legitimate or suspicious.
 Include specific details about:
@@ -118,8 +204,8 @@ IMPORTANT: Respond ONLY with the JSON object, no additional text.`;
       typeof data.repostingHistory === 'object' &&
       typeof data.communitySentiment === 'object' &&
       typeof data.companySignal === 'object' &&
-      Array.isArray(data.citations) &&
-      typeof data.jobDetails === 'object'
+      typeof data.jobDetails === 'object' &&
+      Array.isArray(data.citations)
     );
   }
 } 
