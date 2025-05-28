@@ -34,38 +34,79 @@ A modern web application that helps job seekers verify the authenticity of job p
 ## 🏗️ Project Structure
 
 ```
-frontend/
-├── src/
-│   ├── components/         # Reusable UI components
-│   ├── pages/             # Page components
-│   ├── services/          # API and business logic
-│   ├── types/            # TypeScript interfaces
-│   └── utils/            # Helper functions
+IsThisRealJob/
+├── frontend/           # React frontend application
+│   ├── src/
+│   │   ├── components/ # Reusable UI components
+│   │   ├── pages/     # Page components
+│   │   ├── services/  # API and business logic
+│   │   ├── types/     # TypeScript interfaces
+│   │   └── utils/     # Helper functions
+│   └── package.json
+│
+├── backend/           # Node.js backend application
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   └── middleware/
+│   └── package.json
+│
+└── package.json      # Root package.json for running both services
 ```
 
 ## 🚦 Getting Started
 
-1. Clone the repository:
+### 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/IsThisRealJob.git
 cd IsThisRealJob
 ```
 
-2. Install dependencies:
+### 2. Install Dependencies:
+
+First, install backend dependencies:
 ```bash
+cd backend
 npm install
 ```
 
-3. Set up environment variables:
+Then, install frontend dependencies:
 ```bash
+cd ../frontend
+npm install
+```
+
+Return to root directory:
+```bash
+cd ..
+```
+
+### 3. Set up environment variables:
+
+In the backend directory:
+```bash
+cd backend
 cp .env.example .env
 # Add your API keys and configuration
 ```
 
-4. Start the development server:
+In the frontend directory:
+```bash
+cd ../frontend
+cp .env.example .env
+# Add your frontend configuration
+```
+
+### 4. Start the development servers:
+
+From the root directory:
 ```bash
 npm run dev
 ```
+
+This will start both the frontend and backend servers concurrently:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
 
 ## 🔄 Current Development Status
 
@@ -91,10 +132,9 @@ npm run dev
 4. Weekly job market reports
 
 ### Long Term
-1. Machine learning for pattern detection
-2. API access for developers
-3. Integration with major job boards
-4. Mobile app development
+1. API access for developers
+2. Integration with major job boards
+3. Mobile app development
 
 ## 🤝 Contributing
 
@@ -103,15 +143,6 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-
-## 📞 Support
-
-For support, please:
-1. Check our [FAQ](https://isthisrealjob.com/faq)
-2. Open an issue
-3. Contact us at support@isthisrealjob.com
-
 ---
 
 Built with ❤️ to make job searching more transparent
