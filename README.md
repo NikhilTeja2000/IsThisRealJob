@@ -1,101 +1,117 @@
-# Is This Job Real
+# IsThisRealJob - Job Posting Verification Tool
 
-A full-stack application to verify job listings using real-time web data and AI reasoning.
+A modern web application that helps job seekers verify the authenticity of job postings using AI and real-time web intelligence.
 
-## Project Structure
+## 🚀 Features
 
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Node.js + Express + TypeScript
+### Core Functionality
+- **Real-Time Trust Scoring**: Instant analysis of job postings with a comprehensive trust score
+- **Cross-Platform Verification**: Check job consistency across company career pages and job boards
+- **Community Sentiment Analysis**: Aggregate insights from Reddit, Blind, and other platforms
+- **Reposting Pattern Detection**: Track how often and where jobs are reposted
+- **Red Flag Detection**: Automatic identification of common scam patterns
 
-## Setup Instructions
+### Technical Features
+- **Modern React Frontend**: Built with React and TypeScript
+- **Responsive Design**: Glass-card UI that works beautifully on all devices
+- **Real-time Analysis**: Powered by Perplexity Sonar API
+- **Structured Data Validation**: Comprehensive validation and fallback systems
 
-### Prerequisites
+## 🛠️ Tech Stack
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+### Frontend
+- React 18+
+- TypeScript
+- Tailwind CSS
+- Lucide Icons
+- React Router
 
-### Environment Variables
+### Backend Services
+- Perplexity Sonar API for web intelligence
+- Custom risk analysis engine
+- Data enrichment services
 
-Create a `.env` file in the `backend` directory with the following variables:
-
-```
-PORT=3000
-NODE_ENV=development
-```
-
-### Installation
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone <repository-url>
-   cd IsThisRealJob
-   ```
-
-2. **Install dependencies:**
-
-   ```bash
-   # Install root dependencies
-   npm install
-
-   # Install frontend dependencies
-   cd frontend
-   npm install
-
-   # Install backend dependencies
-   cd ../backend
-   npm install
-   ```
-
-3. **Build the backend:**
-
-   ```bash
-   cd backend
-   npm run build
-   ```
-
-4. **Start the application:**
-
-   ```bash
-   # Start both frontend and backend concurrently
-   npm run dev
-   ```
-
-   - Frontend: [http://localhost:5173/](http://localhost:5173/)
-   - Backend: [http://localhost:3000/](http://localhost:3000/)
-
-## Features
-
-- **Job Fact-Checking**: Verify job listings using Sonar Pro API by Perplexity.
-- **Trust Score**: Evaluate job legitimacy based on reposting history, company credibility, and community sentiment.
-- **Citations**: Every claim includes verifiable source links from the web.
-
-## API Endpoints
-
-- **GET /api/jobs/check**: Basic job check endpoint.
-- **POST /api/jobs/fact-check**: Fact-check a job listing using Sonar Pro API.
-
-## .gitignore
-
-Ensure the following files and directories are ignored by Git:
+## 🏗️ Project Structure
 
 ```
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-
-# Build output
-dist/
-
-# Logs
-*.log
-
-# OS files
-.DS_Store
+frontend/
+├── src/
+│   ├── components/         # Reusable UI components
+│   ├── pages/             # Page components
+│   ├── services/          # API and business logic
+│   ├── types/            # TypeScript interfaces
+│   └── utils/            # Helper functions
 ```
 
-## License
+## 🚦 Getting Started
 
-MIT
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/IsThisRealJob.git
+cd IsThisRealJob
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Add your API keys and configuration
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+## 🔄 Current Development Status
+
+### Recently Completed
+- ✅ Homepage redesign with trust score focus
+- ✅ Mobile-responsive navigation
+- ✅ About page with tech stack details
+- ✅ Red flags detection system
+- ✅ Basic job posting analysis
+
+### In Progress
+- 🏗️ Save job scans & history
+- 🏗️ Company pattern detection
+- 🏗️ Weekly ghost job alerts
+- 🏗️ Browser extension
+
+## 🔜 Roadmap
+
+### Near Term
+1. User accounts and saved searches
+2. Enhanced company verification
+3. Browser extension for instant analysis
+4. Weekly job market reports
+
+### Long Term
+1. Machine learning for pattern detection
+2. API access for developers
+3. Integration with major job boards
+4. Mobile app development
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## 📞 Support
+
+For support, please:
+1. Check our [FAQ](https://isthisrealjob.com/faq)
+2. Open an issue
+3. Contact us at support@isthisrealjob.com
+
+---
+
+Built with ❤️ to make job searching more transparent
